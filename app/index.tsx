@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import Sidebar from '@/components/Sidebar';
+import TopBar from '@/components/TopBar';
+import BottomNav from '@/components/BottomNav';
 import Dashboard from '@/app/main/dashboard';
 import StokBensin from '@/app/main/stok-bensin';
 import Penjualan from '@/app/main/penjualan';
@@ -14,11 +15,10 @@ import AIChat from '@/app/main/ai-chat';
 
 export default function MainLayout() {
   const [activeScreen, setActiveScreen] = useState('dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const renderScreen = () => {
     switch (activeScreen) {
-      case 'dashboard': return <Dashboard />;
+      case 'dashboard': return <Dashboard onNavigate={setActiveScreen} />;
       case 'stok-bensin': return <StokBensin />;
       case 'penjualan': return <Penjualan />;
       case 'pengeluaran': return <Pengeluaran />;
@@ -27,22 +27,18 @@ export default function MainLayout() {
       case 'grafik': return <Grafik />;
       case 'pengaturan': return <Pengaturan />;
       case 'ai-chat': return <AIChat />;
-      default: return <Dashboard />;
+      default: return <Dashboard onNavigate={setActiveScreen} />;
     }
   };
 
   return (
     <GestureHandlerRootView style={styles.container}>
       <View style={styles.container}>
-        <Sidebar
-          activeScreen={activeScreen}
-          onNavigate={setActiveScreen}
-          isOpen={sidebarOpen}
-          onToggle={() => setSidebarOpen(!sidebarOpen)}
-        />
+        <TopBar activeScreen={activeScreen} />
         <View style={styles.content}>
           {renderScreen()}
         </View>
+        <BottomNav activeScreen={activeScreen} onNavigate={setActiveScreen} />
       </View>
     </GestureHandlerRootView>
   );
@@ -53,7 +49,7 @@ const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: 'row',
+    backgroundColor: '#0f172a',
   },
   content: {
     flex: 1,

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Modal, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Modal, RefreshControl, Platform } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { StockEntry } from '@/types/database';
 import { Plus, Edit2, Trash2, X, AlertTriangle } from 'lucide-react-native';
@@ -37,7 +37,9 @@ export default function StokBensin() {
     }
   }, []);
 
-  useEffect(() => { fetchEntries(); }, [fetchEntries]);
+  useEffect(() => {
+    fetchEntries();
+  }, [fetchEntries]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -193,6 +195,7 @@ export default function StokBensin() {
         )}
       </ScrollView>
 
+      {/* Add Modal */}
       <Modal visible={modalVisible} animationType="fade" transparent onRequestClose={() => setModalVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -219,6 +222,7 @@ export default function StokBensin() {
         </View>
       </Modal>
 
+      {/* Edit Modal */}
       <Modal visible={editModalVisible} animationType="fade" transparent onRequestClose={() => setEditModalVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -245,6 +249,7 @@ export default function StokBensin() {
         </View>
       </Modal>
 
+      {/* Confirm Delete Modal */}
       <Modal visible={confirmModalVisible} animationType="fade" transparent onRequestClose={() => setConfirmModalVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { Send, Bot, User, Sparkles, RefreshCw } from 'lucide-react-native';
@@ -36,7 +36,7 @@ export default function AIChat() {
     return String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
   }
 
-  const sendMessage = async (text?: string) => {
+  const sendMessage = useCallback(async (text?: string) => {
     const prompt = (text || input).trim();
     if (!prompt || loading) return;
 
@@ -53,7 +53,7 @@ export default function AIChat() {
 
     try {
       const { data } = await supabase.functions.invoke('ai-assistant', {
-        body: { prompt },
+        body: { prompt, history: messages.map(m => ({ role: m.role, content: m.content })) },
       });
 
       const assistantMsg: ChatMessage = {
@@ -75,7 +75,7 @@ export default function AIChat() {
       setLoading(false);
       setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
     }
-  };
+  }, [input, loading, messages]);
 
   const clearChat = () => {
     setMessages([
