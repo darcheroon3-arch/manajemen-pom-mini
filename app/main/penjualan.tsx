@@ -13,6 +13,10 @@ export default function Penjualan() {
   const [itemToDelete, setItemToDelete] = useState<Sale | null>(null);
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [tanggal, setTanggal] = useState(new Date().toISOString().split('T')[0]);
+  const [jam, setJam] = useState(() => {
+    const now = new Date();
+    return String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+  });
   const [literTerjual, setLiterTerjual] = useState('');
   const [hargaJual, setHargaJual] = useState('');
   const [refreshing, setRefreshing] = useState(false);
@@ -54,7 +58,7 @@ export default function Penjualan() {
 
     try {
       const { error } = await supabase.from('sales').insert({
-        tanggal, liter_terjual: liter, harga_jual_per_liter: harga, omzet, profit,
+        tanggal, jam: jam || null, liter_terjual: liter, harga_jual_per_liter: harga, omzet, profit,
       });
       if (error) throw error;
       await supabase.from('audit_logs').insert({
@@ -79,7 +83,7 @@ export default function Penjualan() {
 
     try {
       const { error } = await supabase.from('sales').update({
-        tanggal, liter_terjual: liter, harga_jual_per_liter: harga, omzet, profit,
+        tanggal, jam: jam || null, liter_terjual: liter, harga_jual_per_liter: harga, omzet, profit,
       }).eq('id', selectedSale.id);
       if (error) throw error;
       await supabase.from('audit_logs').insert({
@@ -119,6 +123,7 @@ export default function Penjualan() {
   const openEdit = (sale: Sale) => {
     setSelectedSale(sale);
     setTanggal(sale.tanggal);
+    setJam(sale.jam || '');
     setLiterTerjual(sale.liter_terjual.toString());
     setHargaJual(sale.harga_jual_per_liter.toString());
     setErrorMsg('');
@@ -133,6 +138,8 @@ export default function Penjualan() {
 
   const resetForm = () => {
     setTanggal(new Date().toISOString().split('T')[0]);
+    const now = new Date();
+    setJam(String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0'));
     setLiterTerjual('');
     setHargaJual(settings?.harga_jual_per_liter.toString() || '10000');
   };
@@ -158,7 +165,7 @@ export default function Penjualan() {
         {sales.map(sale => (
           <View key={sale.id} style={styles.card}>
             <View style={styles.cardHeader}>
-              <Text style={styles.cardDate}>{sale.tanggal}</Text>
+              <Text style={styles.cardDate}>{sale.tanggal} {sale.jam ? '· ' + sale.jam : ''}</Text>
               <View style={styles.cardActions}>
                 <TouchableOpacity style={styles.actionButton} onPress={() => openEdit(sale)}>
                   <Edit2 size={16} color="#3b82f6" />
@@ -187,6 +194,8 @@ export default function Penjualan() {
             </View>
             <Text style={styles.label}>Tanggal</Text>
             <TextInput style={styles.input} value={tanggal} onChangeText={setTanggal} placeholder="YYYY-MM-DD" placeholderTextColor="#64748b" />
+            <Text style={styles.label}>Jam (HH:MM)</Text>
+            <TextInput style={styles.input} value={jam} onChangeText={setJam} placeholder="08:30" placeholderTextColor="#64748b" />
             <Text style={styles.label}>Liter Terjual</Text>
             <TextInput style={styles.input} value={literTerjual} onChangeText={setLiterTerjual} keyboardType="numeric" placeholder="0.00" placeholderTextColor="#64748b" />
             <Text style={styles.label}>Harga Jual per Liter</Text>
@@ -209,6 +218,8 @@ export default function Penjualan() {
             </View>
             <Text style={styles.label}>Tanggal</Text>
             <TextInput style={styles.input} value={tanggal} onChangeText={setTanggal} placeholder="YYYY-MM-DD" placeholderTextColor="#64748b" />
+            <Text style={styles.label}>Jam (HH:MM)</Text>
+            <TextInput style={styles.input} value={jam} onChangeText={setJam} placeholder="08:30" placeholderTextColor="#64748b" />
             <Text style={styles.label}>Liter Terjual</Text>
             <TextInput style={styles.input} value={literTerjual} onChangeText={setLiterTerjual} keyboardType="numeric" placeholder="0.00" placeholderTextColor="#64748b" />
             <Text style={styles.label}>Harga Jual per Liter</Text>

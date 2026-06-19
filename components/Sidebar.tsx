@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions } from 'react-native';
 import { useEffect, useRef } from 'react';
-import { Menu, X, LayoutDashboard, Fuel, ShoppingCart, Receipt, History, FileText, BarChart3, Settings } from 'lucide-react-native';
+import { Menu, X, LayoutDashboard, Fuel, ShoppingCart, Receipt, History, FileText, BarChart3, Settings, Sparkles } from 'lucide-react-native';
 
 interface SidebarProps {
   activeScreen: string;
@@ -18,6 +18,7 @@ const menuItems = [
   { id: 'laporan', label: 'Laporan', icon: FileText },
   { id: 'grafik', label: 'Grafik', icon: BarChart3 },
   { id: 'pengaturan', label: 'Pengaturan', icon: Settings },
+  { id: 'ai-chat', label: 'AI Asisten', icon: Sparkles },
 ];
 
 export default function Sidebar({ activeScreen, onNavigate, isOpen, onToggle }: SidebarProps) {

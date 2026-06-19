@@ -11,6 +11,7 @@ export interface Settings {
 export interface StockEntry {
   id: string;
   tanggal: string;
+  jam: string | null;
   jumlah_liter: number;
   harga_beli_total: number;
   catatan: string | null;
@@ -20,6 +21,7 @@ export interface StockEntry {
 export interface Sale {
   id: string;
   tanggal: string;
+  jam: string | null;
   liter_terjual: number;
   harga_jual_per_liter: number;
   omzet: number;

@@ -12,6 +12,10 @@ export default function StokBensin() {
   const [itemToDelete, setItemToDelete] = useState<StockEntry | null>(null);
   const [selectedEntry, setSelectedEntry] = useState<StockEntry | null>(null);
   const [tanggal, setTanggal] = useState(new Date().toISOString().split('T')[0]);
+  const [jam, setJam] = useState(() => {
+    const now = new Date();
+    return String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+  });
   const [jumlahLiter, setJumlahLiter] = useState('');
   const [hargaBeli, setHargaBeli] = useState('');
   const [catatan, setCatatan] = useState('');
@@ -33,9 +37,7 @@ export default function StokBensin() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchEntries();
-  }, [fetchEntries]);
+  useEffect(() => { fetchEntries(); }, [fetchEntries]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -52,7 +54,7 @@ export default function StokBensin() {
 
     try {
       const { data, error } = await supabase.from('stock_entries').insert({
-        tanggal, jumlah_liter: liter, harga_beli_total: harga, catatan: catatan || null,
+        tanggal, jam: jam || null, jumlah_liter: liter, harga_beli_total: harga, catatan: catatan || null,
       }).select().single();
       if (error) throw error;
 
@@ -84,7 +86,7 @@ export default function StokBensin() {
 
     try {
       const { error } = await supabase.from('stock_entries').update({
-        tanggal, jumlah_liter: liter, harga_beli_total: harga, catatan: catatan || null,
+        tanggal, jam: jam || null, jumlah_liter: liter, harga_beli_total: harga, catatan: catatan || null,
       }).eq('id', selectedEntry.id);
       if (error) throw error;
       await supabase.from('audit_logs').insert({
@@ -124,6 +126,7 @@ export default function StokBensin() {
   const openEdit = (entry: StockEntry) => {
     setSelectedEntry(entry);
     setTanggal(entry.tanggal);
+    setJam(entry.jam || '');
     setJumlahLiter(entry.jumlah_liter.toString());
     setHargaBeli(entry.harga_beli_total ? entry.harga_beli_total.toString() : '');
     setCatatan(entry.catatan || '');
@@ -139,6 +142,8 @@ export default function StokBensin() {
 
   const resetForm = () => {
     setTanggal(new Date().toISOString().split('T')[0]);
+    const now = new Date();
+    setJam(String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0'));
     setJumlahLiter('');
     setHargaBeli('');
     setCatatan('');
@@ -166,7 +171,7 @@ export default function StokBensin() {
         {entries.map((entry) => (
           <View key={entry.id} style={styles.card}>
             <View style={styles.cardHeader}>
-              <Text style={styles.cardDate}>{entry.tanggal}</Text>
+              <Text style={styles.cardDate}>{entry.tanggal} {entry.jam ? '· ' + entry.jam : ''}</Text>
               <View style={styles.cardActions}>
                 <TouchableOpacity style={styles.actionButton} onPress={() => openEdit(entry)}>
                   <Edit2 size={16} color="#3b82f6" />
@@ -199,6 +204,8 @@ export default function StokBensin() {
             </View>
             <Text style={styles.label}>Tanggal</Text>
             <TextInput style={styles.input} value={tanggal} onChangeText={setTanggal} placeholder="YYYY-MM-DD" placeholderTextColor="#64748b" />
+            <Text style={styles.label}>Jam (HH:MM)</Text>
+            <TextInput style={styles.input} value={jam} onChangeText={setJam} placeholder="08:30" placeholderTextColor="#64748b" />
             <Text style={styles.label}>Jumlah Liter</Text>
             <TextInput style={styles.input} value={jumlahLiter} onChangeText={setJumlahLiter} keyboardType="numeric" placeholder="0.00" placeholderTextColor="#64748b" />
             <Text style={styles.label}>Harga Beli Total (Opsional)</Text>
@@ -223,6 +230,8 @@ export default function StokBensin() {
             </View>
             <Text style={styles.label}>Tanggal</Text>
             <TextInput style={styles.input} value={tanggal} onChangeText={setTanggal} placeholder="YYYY-MM-DD" placeholderTextColor="#64748b" />
+            <Text style={styles.label}>Jam (HH:MM)</Text>
+            <TextInput style={styles.input} value={jam} onChangeText={setJam} placeholder="08:30" placeholderTextColor="#64748b" />
             <Text style={styles.label}>Jumlah Liter</Text>
             <TextInput style={styles.input} value={jumlahLiter} onChangeText={setJumlahLiter} keyboardType="numeric" placeholder="0.00" placeholderTextColor="#64748b" />
             <Text style={styles.label}>Harga Beli Total</Text>
