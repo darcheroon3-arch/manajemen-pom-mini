@@ -10,6 +10,7 @@ import Riwayat from '@/app/main/riwayat';
 import Laporan from '@/app/main/laporan';
 import Grafik from '@/app/main/grafik';
 import Pengaturan from '@/app/main/pengaturan';
+import AIChat from '@/app/main/ai-chat';
 
 export default function MainLayout() {
   const [activeScreen, setActiveScreen] = useState('dashboard');
@@ -25,6 +26,7 @@ export default function MainLayout() {
       case 'laporan': return <Laporan />;
       case 'grafik': return <Grafik />;
       case 'pengaturan': return <Pengaturan />;
+      case 'ai-chat': return <AIChat />;
       default: return <Dashboard />;
     }
   };
