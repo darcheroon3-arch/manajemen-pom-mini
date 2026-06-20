@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Home, Clock, BarChart3, Settings } from 'lucide-react-native';
+import { Home, Clock, BarChart3, Settings, Gift } from 'lucide-react-native';
 
 interface BottomNavProps {
   activeScreen: string;
@@ -10,6 +10,7 @@ const navItems = [
   { id: 'dashboard', label: 'Dashboard', icon: Home },
   { id: 'riwayat', label: 'Riwayat', icon: Clock },
   { id: 'grafik', label: 'Grafik', icon: BarChart3 },
+  { id: 'gift', label: 'Gift', icon: Gift },
   { id: 'pengaturan', label: 'Pengaturan', icon: Settings },
 ];
 
