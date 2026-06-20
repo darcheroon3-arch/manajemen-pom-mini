@@ -5,7 +5,7 @@ import { StockEntry, Sale, Expense } from '@/types/database';
 import {
   Fuel, Droplets, DollarSign, TrendingUp, TrendingDown, Wallet,
   Plus, Package, ShoppingCart, Receipt, FileText, Edit2, Trash2,
-  ChevronDown, Calendar, X, CircleDollarSign
+  ChevronDown, Calendar, X, CircleDollarSign, Gift
 } from 'lucide-react-native';
 
 interface DashboardProps {
@@ -19,10 +19,12 @@ interface DashboardStats {
   omzetHariIni: number;
   profitHariIni: number;
   pengeluaranHariIni: number;
+  giftHariIni: number;
   labaBersihHariIni: number;
   totalBalance: number;
   totalProfit: number;
   totalPengeluaran: number;
+  totalGift: number;
 }
 
 interface RecentItem {
@@ -44,8 +46,8 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [stats, setStats] = useState<DashboardStats>({
     sisaBensin: 0, literTerjualHariIni: 0, transaksiHariIni: 0,
-    omzetHariIni: 0, profitHariIni: 0, pengeluaranHariIni: 0,
-    labaBersihHariIni: 0, totalBalance: 0, totalProfit: 0, totalPengeluaran: 0,
+    omzetHariIni: 0, profitHariIni: 0, pengeluaranHariIni: 0, giftHariIni: 0,
+    labaBersihHariIni: 0, totalBalance: 0, totalProfit: 0, totalPengeluaran: 0, totalGift: 0,
   });
   const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -106,8 +108,8 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
 
     setStats({
       sisaBensin, literTerjualHariIni, transaksiHariIni: salesToday.length,
-      omzetHariIni, profitHariIni, pengeluaranHariIni,
-      labaBersihHariIni, totalBalance, totalProfit, totalPengeluaran,
+      omzetHariIni, profitHariIni, pengeluaranHariIni, giftHariIni,
+      labaBersihHariIni, totalBalance, totalProfit, totalPengeluaran, totalGift,
     });
 
     const recent: RecentItem[] = [];
@@ -200,13 +202,15 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
     { title: 'Omzet Hari Ini', value: formatRupiah(stats.omzetHariIni), sub: 'Total Penjualan', icon: DollarSign, bg: '#0e7490', color: '#06b6d4' },
     { title: 'Profit Kotor Hari Ini', value: formatRupiah(stats.profitHariIni), sub: `@Rp ${(settings?.profit_per_liter || 2000).toLocaleString('id-ID')} / Liter`, icon: TrendingUp, bg: '#7c3aed', color: '#8b5cf6' },
     { title: 'Pengeluaran Hari Ini', value: formatRupiah(stats.pengeluaranHariIni), sub: 'Total Biaya', icon: TrendingDown, bg: '#c2410c', color: '#f97316' },
-    { title: 'Profit Bersih Hari Ini', value: formatRupiah(stats.labaBersihHariIni), sub: 'Setelah Pengeluaran', icon: Wallet, bg: '#dc2626', color: '#ef4444' },
+    { title: 'Gift Hari Ini', value: formatRupiah(stats.giftHariIni), sub: 'Sumber Lain', icon: Gift, bg: '#166534', color: '#22c55e' },
+    { title: 'Profit Bersih Hari Ini', value: formatRupiah(stats.labaBersihHariIni + stats.giftHariIni), sub: 'Setelah Pengeluaran + Gift', icon: Wallet, bg: '#dc2626', color: '#ef4444' },
   ];
 
   const quickActions = [
     { label: 'Isi Stok', icon: Package, screen: 'stok-bensin', color: '#3b82f6' },
     { label: 'Penjualan', icon: ShoppingCart, screen: 'penjualan', color: '#22c55e' },
     { label: 'Pengeluaran', icon: Receipt, screen: 'pengeluaran', color: '#f97316' },
+    { label: 'Gift', icon: Gift, screen: 'gift', color: '#166534' },
     { label: 'Laporan', icon: FileText, screen: 'laporan', color: '#8b5cf6' },
   ];
 
@@ -287,39 +291,39 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
           })}
         </View>
 
-        {/* Balance Overview */}
-        <View style={styles.balanceCard}>
-          <View style={styles.balanceHeader}>
-            <CircleDollarSign size={20} color="#22c55e" />
-            <Text style={styles.balanceTitle}>Total Balance</Text>
+        {/* Summary Card */}
+        <View style={styles.summaryCard}>
+          <View style={styles.summaryRow}>
+            <CircleDollarSign size={24} color="#22c55e" />
+            <View style={styles.summaryText}>
+              <Text style={styles.summaryLabel}>Total Balance</Text>
+              <Text style={styles.summaryValue}>{formatRupiah(stats.totalBalance)}</Text>
+            </View>
           </View>
-          <Text style={styles.balanceValue}>{formatRupiah(stats.totalBalance)}</Text>
-          <View style={styles.balanceRow}>
-            <Text style={styles.balanceLabel}>Total Profit: <Text style={styles.balancePositive}>{formatRupiah(stats.totalProfit)}</Text></Text>
-            <Text style={styles.balanceLabel}>Total Pengeluaran: <Text style={styles.balanceNegative}>{formatRupiah(stats.totalPengeluaran)}</Text></Text>
+          <View style={styles.summaryDivider} />
+          <View style={styles.summaryBottom}>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryItemLabel}>Total Profit (Kotor)</Text>
+              <Text style={[styles.summaryItemValue, { color: '#22c55e' }]}>{formatRupiah(stats.totalProfit)}</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryItemLabel}>Total Pengeluaran</Text>
+              <Text style={[styles.summaryItemValue, { color: '#ef4444' }]}>{formatRupiah(stats.totalPengeluaran)}</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryItemLabel}>Total Gift</Text>
+              <Text style={[styles.summaryItemValue, { color: '#166534' }]}>{formatRupiah(stats.totalGift)}</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryItemLabel}>Profit Bersih</Text>
+              <Text style={[styles.summaryItemValue, { color: '#3b82f6' }]}>{formatRupiah(stats.totalProfit - stats.totalPengeluaran + stats.totalGift)}</Text>
+            </View>
           </View>
         </View>
 
-        {/* Recent Activity */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Aktivitas Terbaru</Text>
-          {recentItems.map(item => {
-            const Icon = item.type === 'sale' ? ShoppingCart : item.type === 'stock' ? Package : Receipt;
-            return (
-              <View key={item.id} style={styles.recentItem}>
-                <View style={[styles.recentIcon, { backgroundColor: item.color + '20' }]}>
-                  <Icon size={16} color={item.color} />
-                </View>
-                <View style={styles.recentInfo}>
-                  <Text style={styles.recentTitle}>{item.title}</Text>
-                  <Text style={styles.recentDate}>{item.date} {item.time}</Text>
-                  <Text style={styles.recentValue}>{item.value}</Text>
-                </View>
-                <Text style={[styles.recentAmount, { color: item.color }]}>{formatRupiah(item.amount)}</Text>
-              </View>
-            );
-          })}
-          {recentItems.length === 0 && <Text style={styles.emptyText}>Belum ada aktivitas</Text>}
+        {/* Quick Actions Section Title */}
+        <View style={styles.sectionTitle}>
+          <Text style={styles.sectionTitleText}>Aksi Cepat</Text>
         </View>
 
         {/* Quick Add Button */}
@@ -327,50 +331,50 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
           <Plus size={24} color="#fff" />
         </TouchableOpacity>
 
+        {/* Quick Add Modal */}
+        <Modal visible={showQuickAdd} animationType="fade" transparent onRequestClose={() => setShowQuickAdd(false)}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Tambah Cepat</Text>
+                <TouchableOpacity onPress={() => setShowQuickAdd(false)}>
+                  <X size={24} color="#94a3b8" />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.quickTypeRow}>
+                <TouchableOpacity style={[styles.quickTypeBtn, quickType === 'sale' && styles.quickTypeBtnActive]} onPress={() => setQuickType('sale')}>
+                  <Text style={[styles.quickTypeText, quickType === 'sale' && styles.quickTypeTextActive]}>Penjualan</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.quickTypeBtn, quickType === 'stock' && styles.quickTypeBtnActive]} onPress={() => setQuickType('stock')}>
+                  <Text style={[styles.quickTypeText, quickType === 'stock' && styles.quickTypeTextActive]}>Stok</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.quickTypeBtn, quickType === 'expense' && styles.quickTypeBtnActive]} onPress={() => setQuickType('expense')}>
+                  <Text style={[styles.quickTypeText, quickType === 'expense' && styles.quickTypeTextActive]}>Pengeluaran</Text>
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.label}>Jumlah / Nominal</Text>
+              <TextInput style={styles.input} value={quickAmount} onChangeText={setQuickAmount} keyboardType="numeric" placeholder="0" placeholderTextColor="#64748b" />
+              {quickType === 'sale' && (
+                <>
+                  <Text style={styles.label}>Harga per Liter</Text>
+                  <TextInput style={styles.input} value={quickPrice} onChangeText={setQuickPrice} keyboardType="numeric" placeholder={settings?.harga_jual_per_liter?.toString() || '10000'} placeholderTextColor="#64748b" />
+                </>
+              )}
+              {quickType === 'expense' && (
+                <>
+                  <Text style={styles.label}>Nama Pengeluaran</Text>
+                  <TextInput style={styles.input} value={quickName} onChangeText={setQuickName} placeholder="Nama..." placeholderTextColor="#64748b" />
+                </>
+              )}
+              <TouchableOpacity style={styles.submitButton} onPress={quickAdd}>
+                <Text style={styles.submitButtonText}>Simpan</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
         <View style={{ height: 80 }} />
       </ScrollView>
-
-      {/* Quick Add Modal */}
-      <Modal visible={showQuickAdd} animationType="fade" transparent onRequestClose={() => setShowQuickAdd(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Tambah Cepat</Text>
-              <TouchableOpacity onPress={() => setShowQuickAdd(false)}>
-                <X size={24} color="#94a3b8" />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.quickTypeRow}>
-              <TouchableOpacity style={[styles.quickTypeBtn, quickType === 'sale' && styles.quickTypeBtnActive]} onPress={() => setQuickType('sale')}>
-                <Text style={[styles.quickTypeText, quickType === 'sale' && styles.quickTypeTextActive]}>Penjualan</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.quickTypeBtn, quickType === 'stock' && styles.quickTypeBtnActive]} onPress={() => setQuickType('stock')}>
-                <Text style={[styles.quickTypeText, quickType === 'stock' && styles.quickTypeTextActive]}>Stok</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.quickTypeBtn, quickType === 'expense' && styles.quickTypeBtnActive]} onPress={() => setQuickType('expense')}>
-                <Text style={[styles.quickTypeText, quickType === 'expense' && styles.quickTypeTextActive]}>Pengeluaran</Text>
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.label}>Jumlah / Nominal</Text>
-            <TextInput style={styles.input} value={quickAmount} onChangeText={setQuickAmount} keyboardType="numeric" placeholder="0" placeholderTextColor="#64748b" />
-            {quickType === 'sale' && (
-              <>
-                <Text style={styles.label}>Harga per Liter</Text>
-                <TextInput style={styles.input} value={quickPrice} onChangeText={setQuickPrice} keyboardType="numeric" placeholder={settings?.harga_jual_per_liter?.toString() || '10000'} placeholderTextColor="#64748b" />
-              </>
-            )}
-            {quickType === 'expense' && (
-              <>
-                <Text style={styles.label}>Nama Pengeluaran</Text>
-                <TextInput style={styles.input} value={quickName} onChangeText={setQuickName} placeholder="Nama..." placeholderTextColor="#64748b" />
-              </>
-            )}
-            <TouchableOpacity style={styles.submitButton} onPress={quickAdd}>
-              <Text style={styles.submitButtonText}>Simpan</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 }
@@ -403,24 +407,18 @@ const styles = StyleSheet.create({
   statsValue: { color: '#fff', fontSize: 16, fontWeight: '700', marginBottom: 2 },
   statsTitle: { color: '#94a3b8', fontSize: 11 },
   statsSub: { color: '#64748b', fontSize: 10 },
-  balanceCard: { backgroundColor: '#1e293b', borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: '#334155' },
-  balanceHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
-  balanceTitle: { color: '#94a3b8', fontSize: 13, fontWeight: '600' },
-  balanceValue: { color: '#22c55e', fontSize: 22, fontWeight: '700', marginBottom: 8 },
-  balanceRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  balanceLabel: { color: '#94a3b8', fontSize: 11 },
-  balancePositive: { color: '#22c55e', fontWeight: '600' },
-  balanceNegative: { color: '#ef4444', fontWeight: '600' },
-  section: { marginBottom: 16 },
-  sectionTitle: { color: '#94a3b8', fontSize: 13, fontWeight: '600', marginBottom: 12, letterSpacing: 0.5 },
-  recentItem: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#1e293b', borderRadius: 10, padding: 12, marginBottom: 8 },
-  recentIcon: { width: 36, height: 36, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
-  recentInfo: { flex: 1 },
-  recentTitle: { color: '#fff', fontSize: 14, fontWeight: '600' },
-  recentDate: { color: '#64748b', fontSize: 11, marginTop: 2 },
-  recentValue: { color: '#94a3b8', fontSize: 12, marginTop: 2 },
-  recentAmount: { fontSize: 14, fontWeight: '700' },
-  emptyText: { color: '#64748b', fontSize: 14, textAlign: 'center', marginTop: 20 },
+  summaryCard: { backgroundColor: '#1e293b', borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: '#334155' },
+  summaryRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
+  summaryText: { flex: 1 },
+  summaryLabel: { color: '#94a3b8', fontSize: 13, fontWeight: '600' },
+  summaryValue: { color: '#22c55e', fontSize: 22, fontWeight: '700' },
+  summaryDivider: { height: 1, backgroundColor: '#334155', marginBottom: 12 },
+  summaryBottom: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  summaryItem: { flex: 1, minWidth: 100 },
+  summaryItemLabel: { color: '#94a3b8', fontSize: 11, marginBottom: 4 },
+  summaryItemValue: { fontSize: 14, fontWeight: '700' },
+  sectionTitle: { marginBottom: 12 },
+  sectionTitleText: { color: '#94a3b8', fontSize: 13, fontWeight: '600', letterSpacing: 0.5 },
   fab: { position: 'absolute', bottom: 20, right: 20, backgroundColor: '#3b82f6', width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', elevation: 4 },
   quickTypeRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
   quickTypeBtn: { flex: 1, backgroundColor: '#334155', borderRadius: 8, padding: 10, alignItems: 'center' },
