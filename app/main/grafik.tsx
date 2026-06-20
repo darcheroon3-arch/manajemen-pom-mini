@@ -8,7 +8,7 @@ import Svg, { Path, Circle, Line, Rect, G, Text as SvgText } from 'react-native-
 const { width: SCREEN_W } = Dimensions.get('window');
 
 const CHART_W = SCREEN_W - 64;
-const CHART_H = 260;
+const CHART_H = 280;
 const PAD_L = 52;
 const PAD_R = 16;
 const PAD_T = 16;
@@ -16,7 +16,6 @@ const PAD_B = 36;
 const GRAPH_W = CHART_W - PAD_L - PAD_R;
 const GRAPH_H = CHART_H - PAD_T - PAD_B;
 
-const CANDLE_W = 7;
 const CANDLE_GAP = 3;
 
 const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -108,7 +107,7 @@ export default function Grafik() {
     let runningBalance = 0;
     const candles: CandleData[] = [];
 
-    const result: DayData[] = dates.map((date, idx) => {
+    const result: DayData[] = dates.map((date) => {
       const daySales = sales.filter(s => s.tanggal === date);
       const dayExpenses = expenses.filter(e => e.tanggal === date);
       const dayProfit = daySales.reduce((sum, s) => sum + Number(s.profit), 0);
