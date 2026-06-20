@@ -49,10 +49,11 @@ export default function Pengaturan() {
   };
 
   const exportCSV = async () => {
-    const [salesRes, stockRes, expensesRes] = await Promise.all([
+    const [salesRes, stockRes, expensesRes, giftsRes] = await Promise.all([
       supabase.from('sales').select('*'),
       supabase.from('stock_entries').select('*'),
       supabase.from('expenses').select('*'),
+      supabase.from('gifts').select('*'),
     ]);
 
     let csv = 'TIPE,TANGGAL,DETAIL,NOMINAL\n';
@@ -64,6 +65,9 @@ export default function Pengaturan() {
     });
     (expensesRes.data || []).forEach((e: any) => {
       csv += `PENGELUARAN,${e.tanggal},${e.nama_pengeluaran},${e.nominal}\n`;
+    });
+    (giftsRes.data || []).forEach((g: any) => {
+      csv += `GIFT,${g.tanggal},${g.keterangan || 'Gift'},${g.nominal}\n`;
     });
 
     Alert.alert('Export CSV', 'Data berhasil diekspor ke format CSV (simulasi)');
@@ -103,7 +107,7 @@ export default function Pengaturan() {
       </View>
 
       <TouchableOpacity style={styles.saveButton} onPress={saveSettings}>
-        <Save size={20} color="#fff" style={{ marginRight: 8 }} />
+        <Save size={18} color="#fff" />
         <Text style={styles.saveButtonText}>Simpan Pengaturan</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -112,17 +116,17 @@ export default function Pengaturan() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0f172a' },
-  contentContainer: { padding: 16, paddingTop: 72, paddingBottom: 32 },
+  contentContainer: { padding: 16, paddingTop: 72 },
   title: { color: '#fff', fontSize: 22, fontWeight: '700', marginBottom: 20 },
-  section: { backgroundColor: '#1e293b', borderRadius: 12, padding: 16, marginBottom: 16 },
-  sectionTitle: { color: '#fff', fontSize: 16, fontWeight: '600', marginBottom: 12 },
-  label: { color: '#94a3b8', fontSize: 13, marginBottom: 6, marginTop: 8 },
+  section: { backgroundColor: '#1e293b', borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: '#334155' },
+  sectionTitle: { color: '#94a3b8', fontSize: 13, fontWeight: '600', marginBottom: 12, letterSpacing: 0.5 },
+  label: { color: '#94a3b8', fontSize: 13, marginBottom: 6, marginTop: 12 },
   input: { backgroundColor: '#334155', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, color: '#fff', fontSize: 15 },
-  toggleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8 },
+  toggleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   toggleLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   toggleLabel: { color: '#e2e8f0', fontSize: 15 },
   exportButton: { backgroundColor: '#334155', borderRadius: 8, paddingVertical: 12, alignItems: 'center' },
-  exportButtonText: { color: '#fff', fontSize: 15, fontWeight: '500' },
-  saveButton: { backgroundColor: '#3b82f6', borderRadius: 10, paddingVertical: 14, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 8 },
+  exportButtonText: { color: '#94a3b8', fontSize: 14, fontWeight: '600' },
+  saveButton: { backgroundColor: '#3b82f6', borderRadius: 10, paddingVertical: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   saveButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 });

@@ -89,13 +89,15 @@ export default function Grafik() {
     const startStr = start.toISOString().split('T')[0];
     const endStr = end.toISOString().split('T')[0];
 
-    const [salesRes, expensesRes] = await Promise.all([
+    const [salesRes, expensesRes, giftsRes] = await Promise.all([
       supabase.from('sales').select('*').gte('tanggal', startStr).lte('tanggal', endStr),
       supabase.from('expenses').select('*').gte('tanggal', startStr).lte('tanggal', endStr),
+      supabase.from('gifts').select('*').gte('tanggal', startStr).lte('tanggal', endStr),
     ]);
 
     const sales = (salesRes.data || []) as Sale[];
     const expenses = (expensesRes.data || []) as Expense[];
+    const gifts = (giftsRes.data || []);
 
     const dates: string[] = [];
     for (let i = 0; i <= rangeDays; i++) {
@@ -110,18 +112,20 @@ export default function Grafik() {
     const result: DayData[] = dates.map((date) => {
       const daySales = sales.filter(s => s.tanggal === date);
       const dayExpenses = expenses.filter(e => e.tanggal === date);
+      const dayGifts = gifts.filter(g => g.tanggal === date);
       const dayProfit = daySales.reduce((sum, s) => sum + Number(s.profit), 0);
       const dayOmzet = daySales.reduce((sum, s) => sum + Number(s.omzet), 0);
       const dayLiter = daySales.reduce((sum, s) => sum + Number(s.liter_terjual), 0);
       const dayPengeluaran = dayExpenses.reduce((sum, e) => sum + Number(e.nominal), 0);
-      const dayBalance = dayProfit - dayPengeluaran;
+      const dayGift = dayGifts.reduce((sum, g) => sum + Number(g.nominal), 0);
+      const dayBalance = dayProfit - dayPengeluaran + dayGift;
 
       const prevBalance = runningBalance;
       runningBalance += dayBalance;
 
       const open = prevBalance;
       const close = runningBalance;
-      const high = Math.max(open, close, open + dayProfit);
+      const high = Math.max(open, close, open + dayProfit + dayGift);
       const low = Math.min(open, close, close - dayPengeluaran);
       const color = close >= open ? '#22c55e' : '#ef4444';
 

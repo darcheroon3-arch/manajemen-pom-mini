@@ -39,6 +39,14 @@ export interface Expense {
   created_at: string;
 }
 
+export interface Gift {
+  id: string;
+  tanggal: string;
+  nominal: number;
+  keterangan: string | null;
+  created_at: string;
+}
+
 export interface AuditLog {
   id: string;
   tipe: string;
@@ -47,13 +55,11 @@ export interface AuditLog {
 }
 
 export interface DashboardStats {
-  sisaBensin: number;
-  literTerjualHariIni: number;
-  omzetHariIni: number;
-  profitHariIni: number;
-  pengeluaranHariIni: number;
-  labaBersihHariIni: number;
-  totalBalance: number;
-  totalProfit: number;
-  totalPengeluaran: number;
+  sisa_bensin: number;
+  total_liter_terjual: number;
+  total_omzet: number;
+  total_profit: number;
+  total_pengeluaran: number;
+  total_balance: number;
+  total_transaksi: number;
 }

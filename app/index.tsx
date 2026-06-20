@@ -7,6 +7,7 @@ import Dashboard from '@/app/main/dashboard';
 import StokBensin from '@/app/main/stok-bensin';
 import Penjualan from '@/app/main/penjualan';
 import Pengeluaran from '@/app/main/pengeluaran';
+import Gift from '@/app/main/gift';
 import Riwayat from '@/app/main/riwayat';
 import Laporan from '@/app/main/laporan';
 import Grafik from '@/app/main/grafik';
@@ -22,6 +23,7 @@ export default function MainLayout() {
       case 'stok-bensin': return <StokBensin />;
       case 'penjualan': return <Penjualan />;
       case 'pengeluaran': return <Pengeluaran />;
+      case 'gift': return <Gift />;
       case 'riwayat': return <Riwayat />;
       case 'laporan': return <Laporan />;
       case 'grafik': return <Grafik />;
@@ -32,27 +34,18 @@ export default function MainLayout() {
   };
 
   return (
-    <GestureHandlerRootView style={styles.container}>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={styles.container}>
         <TopBar activeScreen={activeScreen} />
-        <View style={styles.content}>
-          {renderScreen()}
-        </View>
+        <View style={styles.screen}>{renderScreen()}</View>
         <BottomNav activeScreen={activeScreen} onNavigate={setActiveScreen} />
       </View>
     </GestureHandlerRootView>
   );
 }
 
-const { width } = Dimensions.get('window');
-
+const { height } = Dimensions.get('window');
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0f172a',
-  },
-  content: {
-    flex: 1,
-    backgroundColor: '#0f172a',
-  },
+  container: { flex: 1, backgroundColor: '#0f172a' },
+  screen: { flex: 1, height: height - 100 },
 });
