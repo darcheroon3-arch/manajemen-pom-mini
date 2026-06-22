@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Modal,
 import { supabase } from '@/lib/supabase';
 import { Expense } from '@/types/database';
 import { Plus, Edit2, Trash2, X, AlertTriangle } from 'lucide-react-native';
+import { getIndonesiaDateStr, isValidDate } from '@/lib/date';
 
 const categories = ['Isi Bensin', 'Gaji', 'Listrik', 'Transportasi', 'Perawatan Mesin', 'Operasional', 'Lainnya'];
 
@@ -13,7 +14,7 @@ export default function Pengeluaran() {
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<Expense | null>(null);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
-  const [tanggal, setTanggal] = useState(new Date().toISOString().split('T')[0]);
+  const [tanggal, setTanggal] = useState(getIndonesiaDateStr());
   const [nama, setNama] = useState('');
   const [kategori, setKategori] = useState('Lainnya');
   const [nominal, setNominal] = useState('');
@@ -43,6 +44,7 @@ export default function Pengeluaran() {
 
   const addExpense = async () => {
     setErrorMsg('');
+    if (!isValidDate(tanggal)) { setErrorMsg('Tanggal tidak valid'); return; }
     if (!nama || !nominal) { setErrorMsg('Nama dan nominal harus diisi'); return; }
     const n = parseFloat(nominal);
     if (isNaN(n) || n < 0) { setErrorMsg('Nominal tidak valid'); return; }
@@ -64,6 +66,7 @@ export default function Pengeluaran() {
 
   const editExpense = async () => {
     setErrorMsg('');
+    if (!isValidDate(tanggal)) { setErrorMsg('Tanggal tidak valid'); return; }
     if (!selectedExpense || !nama || !nominal) { setErrorMsg('Data tidak lengkap'); return; }
     const n = parseFloat(nominal);
     if (isNaN(n) || n < 0) { setErrorMsg('Nominal tidak valid'); return; }
@@ -124,7 +127,7 @@ export default function Pengeluaran() {
   };
 
   const resetForm = () => {
-    setTanggal(new Date().toISOString().split('T')[0]);
+    setTanggal(getIndonesiaDateStr());
     setNama('');
     setKategori('Lainnya');
     setNominal('');
@@ -186,8 +189,8 @@ export default function Pengeluaran() {
                 <X size={24} color="#94a3b8" />
               </TouchableOpacity>
             </View>
-            <Text style={styles.label}>Tanggal</Text>
-            <TextInput style={styles.input} value={tanggal} onChangeText={setTanggal} placeholder="YYYY-MM-DD" placeholderTextColor="#64748b" />
+            <Text style={styles.label}>Tanggal (YYYY-MM-DD)</Text>
+            <TextInput style={styles.input} value={tanggal} onChangeText={setTanggal} placeholder="2026-06-22" placeholderTextColor="#64748b" />
             <Text style={styles.label}>Nama Pengeluaran</Text>
             <TextInput style={styles.input} value={nama} onChangeText={setNama} placeholder="Nama pengeluaran..." placeholderTextColor="#64748b" />
             <Text style={styles.label}>Kategori</Text>
@@ -214,8 +217,8 @@ export default function Pengeluaran() {
                 <X size={24} color="#94a3b8" />
               </TouchableOpacity>
             </View>
-            <Text style={styles.label}>Tanggal</Text>
-            <TextInput style={styles.input} value={tanggal} onChangeText={setTanggal} placeholder="YYYY-MM-DD" placeholderTextColor="#64748b" />
+            <Text style={styles.label}>Tanggal (YYYY-MM-DD)</Text>
+            <TextInput style={styles.input} value={tanggal} onChangeText={setTanggal} placeholder="2026-06-22" placeholderTextColor="#64748b" />
             <Text style={styles.label}>Nama Pengeluaran</Text>
             <TextInput style={styles.input} value={nama} onChangeText={setNama} placeholder="Nama pengeluaran..." placeholderTextColor="#64748b" />
             <Text style={styles.label}>Kategori</Text>

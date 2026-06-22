@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Modal,
 import { supabase } from '@/lib/supabase';
 import { Sale, Settings } from '@/types/database';
 import { Plus, Edit2, Trash2, X, AlertTriangle } from 'lucide-react-native';
+import { getIndonesiaDateStr, getIndonesiaTimeStr, isValidDate } from '@/lib/date';
 
 export default function Penjualan() {
   const [sales, setSales] = useState<Sale[]>([]);
@@ -12,11 +13,8 @@ export default function Penjualan() {
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<Sale | null>(null);
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
-  const [tanggal, setTanggal] = useState(new Date().toISOString().split('T')[0]);
-  const [jam, setJam] = useState(() => {
-    const now = new Date();
-    return String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
-  });
+  const [tanggal, setTanggal] = useState(getIndonesiaDateStr());
+  const [jam, setJam] = useState(getIndonesiaTimeStr());
   const [literTerjual, setLiterTerjual] = useState('');
   const [hargaJual, setHargaJual] = useState('');
   const [refreshing, setRefreshing] = useState(false);
@@ -29,11 +27,13 @@ export default function Penjualan() {
         supabase.from('sales').select('*').order('tanggal', { ascending: false }),
         supabase.from('settings').select('*').single(),
       ]);
+      const { data: settingsData } = await supabase.from('settings').select('*').single();
       if (salesRes.data) setSales(salesRes.data);
       if (settingsRes.data) {
         setSettings(settingsRes.data);
         setHargaJual(settingsRes.data.harga_jual_per_liter.toString());
       }
+      setErrorMsg('');
     } catch (err: any) {
       setErrorMsg('Gagal memuat data: ' + err.message);
     }
@@ -49,10 +49,19 @@ export default function Penjualan() {
 
   const addSale = async () => {
     setErrorMsg('');
+    if (!isValidDate(tanggal)) { setErrorMsg('Tanggal tidak valid'); return; }
     if (!literTerjual || !hargaJual) { setErrorMsg('Liter terjual dan harga jual harus diisi'); return; }
     const liter = parseFloat(literTerjual);
     const harga = parseFloat(hargaJual);
     if (isNaN(liter) || liter <= 0 || isNaN(harga) || harga <= 0) { setErrorMsg('Input tidak valid'); return; }
+
+    const { data: stockData } = await supabase.from('stock_entries').select('jumlah_liter');
+    const totalStok = (stockData || []).reduce((sum, s) => sum + Number(s.jumlah_liter), 0);
+    const { data: salesData } = await supabase.from('sales').select('liter_terjual');
+    const totalSold = (salesData || []).reduce((sum, s) => sum + Number(s.liter_terjual), 0);
+    const sisaBensin = totalStok - totalSold;
+    if (liter > sisaBensin) { setErrorMsg(`Stok bensin tidak mencukupi. Sisa: ${sisaBensin.toFixed(2)} L`); return; }
+
     const profit = liter * (settings?.profit_per_liter || 2000);
     const omzet = liter * harga;
 
@@ -74,10 +83,19 @@ export default function Penjualan() {
 
   const editSale = async () => {
     setErrorMsg('');
+    if (!isValidDate(tanggal)) { setErrorMsg('Tanggal tidak valid'); return; }
     if (!selectedSale || !literTerjual || !hargaJual) { setErrorMsg('Data tidak lengkap'); return; }
     const liter = parseFloat(literTerjual);
     const harga = parseFloat(hargaJual);
     if (isNaN(liter) || liter <= 0 || isNaN(harga) || harga <= 0) { setErrorMsg('Input tidak valid'); return; }
+
+    const { data: stockData } = await supabase.from('stock_entries').select('jumlah_liter');
+    const totalStok = (stockData || []).reduce((sum, s) => sum + Number(s.jumlah_liter), 0);
+    const { data: salesData } = await supabase.from('sales').select('liter_terjual').neq('id', selectedSale.id);
+    const totalSold = (salesData || []).reduce((sum, s) => sum + Number(s.liter_terjual), 0);
+    const sisaBensin = totalStok - totalSold;
+    if (liter > sisaBensin) { setErrorMsg(`Stok bensin tidak mencukupi. Sisa: ${sisaBensin.toFixed(2)} L`); return; }
+
     const profit = liter * (settings?.profit_per_liter || 2000);
     const omzet = liter * harga;
 
@@ -137,9 +155,8 @@ export default function Penjualan() {
   };
 
   const resetForm = () => {
-    setTanggal(new Date().toISOString().split('T')[0]);
-    const now = new Date();
-    setJam(String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0'));
+    setTanggal(getIndonesiaDateStr());
+    setJam(getIndonesiaTimeStr());
     setLiterTerjual('');
     setHargaJual(settings?.harga_jual_per_liter.toString() || '10000');
   };
@@ -192,8 +209,8 @@ export default function Penjualan() {
                 <X size={24} color="#94a3b8" />
               </TouchableOpacity>
             </View>
-            <Text style={styles.label}>Tanggal</Text>
-            <TextInput style={styles.input} value={tanggal} onChangeText={setTanggal} placeholder="YYYY-MM-DD" placeholderTextColor="#64748b" />
+            <Text style={styles.label}>Tanggal (YYYY-MM-DD)</Text>
+            <TextInput style={styles.input} value={tanggal} onChangeText={setTanggal} placeholder="2026-06-22" placeholderTextColor="#64748b" />
             <Text style={styles.label}>Jam (HH:MM)</Text>
             <TextInput style={styles.input} value={jam} onChangeText={setJam} placeholder="08:30" placeholderTextColor="#64748b" />
             <Text style={styles.label}>Liter Terjual</Text>
@@ -216,8 +233,8 @@ export default function Penjualan() {
                 <X size={24} color="#94a3b8" />
               </TouchableOpacity>
             </View>
-            <Text style={styles.label}>Tanggal</Text>
-            <TextInput style={styles.input} value={tanggal} onChangeText={setTanggal} placeholder="YYYY-MM-DD" placeholderTextColor="#64748b" />
+            <Text style={styles.label}>Tanggal (YYYY-MM-DD)</Text>
+            <TextInput style={styles.input} value={tanggal} onChangeText={setTanggal} placeholder="2026-06-22" placeholderTextColor="#64748b" />
             <Text style={styles.label}>Jam (HH:MM)</Text>
             <TextInput style={styles.input} value={jam} onChangeText={setJam} placeholder="08:30" placeholderTextColor="#64748b" />
             <Text style={styles.label}>Liter Terjual</Text>

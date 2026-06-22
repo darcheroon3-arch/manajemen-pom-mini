@@ -42,7 +42,12 @@ const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'
 const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
 export default function Dashboard({ onNavigate }: DashboardProps) {
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const now = new Date();
+    const offsetMs = 7 * 60 * 60 * 1000;
+    const jakarta = new Date(now.getTime() + offsetMs);
+    return jakarta;
+  });
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [stats, setStats] = useState<DashboardStats>({
     sisaBensin: 0, literTerjualHariIni: 0, transaksiHariIni: 0,
@@ -59,11 +64,11 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   const [quickCategory, setQuickCategory] = useState('Operasional');
   const [settings, setSettings] = useState<any>(null);
 
-  const todayStr = selectedDate.toISOString().split('T')[0];
+  const todayStr = `${selectedDate.getUTCFullYear()}-${String(selectedDate.getUTCMonth() + 1).padStart(2, '0')}-${String(selectedDate.getUTCDate()).padStart(2, '0')}`;
 
   const formatDateIndo = (date: Date) => {
     const d = new Date(date);
-    return `${dayNames[d.getDay()]}, ${d.getDate()} ${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+    return `${dayNames[d.getUTCDay()]}, ${d.getUTCDate()} ${monthNames[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
   };
 
   const formatRupiah = (value: number) => 'Rp ' + value.toLocaleString('id-ID');
@@ -151,19 +156,21 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
 
   const prevDate = () => {
     const d = new Date(selectedDate);
-    d.setDate(d.getDate() - 1);
+    d.setUTCDate(d.getUTCDate() - 1);
     setSelectedDate(d);
   };
   const nextDate = () => {
     const d = new Date(selectedDate);
-    d.setDate(d.getDate() + 1);
+    d.setUTCDate(d.getUTCDate() + 1);
     setSelectedDate(d);
   };
 
   const quickAdd = async () => {
     const now = new Date();
-    const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
-    const dateStr = selectedDate.toISOString().split('T')[0];
+    const offsetMs = 7 * 60 * 60 * 1000;
+    const jakarta = new Date(now.getTime() + offsetMs);
+    const timeStr = String(jakarta.getUTCHours()).padStart(2, '0') + ':' + String(jakarta.getUTCMinutes()).padStart(2, '0');
+    const dateStr = todayStr;
 
     try {
       if (quickType === 'sale') {
@@ -321,7 +328,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
           </View>
         </View>
 
-        {/* Quick Actions Section Title */}
+        {/* Section Title */}
         <View style={styles.sectionTitle}>
           <Text style={styles.sectionTitleText}>Aksi Cepat</Text>
         </View>

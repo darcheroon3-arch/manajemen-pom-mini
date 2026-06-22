@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Modal, RefreshControl, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Modal, RefreshControl } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { StockEntry } from '@/types/database';
 import { Plus, Edit2, Trash2, X, AlertTriangle } from 'lucide-react-native';
+import { getIndonesiaDateStr, getIndonesiaTimeStr, isValidDate } from '@/lib/date';
 
 export default function StokBensin() {
   const [entries, setEntries] = useState<StockEntry[]>([]);
@@ -11,11 +12,8 @@ export default function StokBensin() {
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<StockEntry | null>(null);
   const [selectedEntry, setSelectedEntry] = useState<StockEntry | null>(null);
-  const [tanggal, setTanggal] = useState(new Date().toISOString().split('T')[0]);
-  const [jam, setJam] = useState(() => {
-    const now = new Date();
-    return String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
-  });
+  const [tanggal, setTanggal] = useState(getIndonesiaDateStr());
+  const [jam, setJam] = useState(getIndonesiaTimeStr());
   const [jumlahLiter, setJumlahLiter] = useState('');
   const [hargaBeli, setHargaBeli] = useState('');
   const [catatan, setCatatan] = useState('');
@@ -37,9 +35,7 @@ export default function StokBensin() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchEntries();
-  }, [fetchEntries]);
+  useEffect(() => { fetchEntries(); }, [fetchEntries]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -49,10 +45,12 @@ export default function StokBensin() {
 
   const addEntry = async () => {
     setErrorMsg('');
+    if (!isValidDate(tanggal)) { setErrorMsg('Tanggal tidak valid'); return; }
     if (!jumlahLiter) { setErrorMsg('Jumlah liter harus diisi'); return; }
     const liter = parseFloat(jumlahLiter);
     const harga = hargaBeli ? parseFloat(hargaBeli) : 0;
     if (isNaN(liter) || liter <= 0) { setErrorMsg('Jumlah liter tidak valid'); return; }
+    if (hargaBeli && (isNaN(harga) || harga < 0)) { setErrorMsg('Harga beli tidak valid'); return; }
 
     try {
       const { data, error } = await supabase.from('stock_entries').insert({
@@ -81,10 +79,12 @@ export default function StokBensin() {
 
   const editEntry = async () => {
     setErrorMsg('');
+    if (!isValidDate(tanggal)) { setErrorMsg('Tanggal tidak valid'); return; }
     if (!selectedEntry || !jumlahLiter) { setErrorMsg('Data tidak lengkap'); return; }
     const liter = parseFloat(jumlahLiter);
     const harga = hargaBeli ? parseFloat(hargaBeli) : 0;
     if (isNaN(liter) || liter <= 0) { setErrorMsg('Jumlah liter tidak valid'); return; }
+    if (hargaBeli && (isNaN(harga) || harga < 0)) { setErrorMsg('Harga beli tidak valid'); return; }
 
     try {
       const { error } = await supabase.from('stock_entries').update({
@@ -143,9 +143,8 @@ export default function StokBensin() {
   };
 
   const resetForm = () => {
-    setTanggal(new Date().toISOString().split('T')[0]);
-    const now = new Date();
-    setJam(String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0'));
+    setTanggal(getIndonesiaDateStr());
+    setJam(getIndonesiaTimeStr());
     setJumlahLiter('');
     setHargaBeli('');
     setCatatan('');
@@ -167,7 +166,6 @@ export default function StokBensin() {
           <Text style={styles.errorText}>{errorMsg}</Text>
         </View>
       ) : null}
-
       <ScrollView style={styles.list} contentContainerStyle={styles.listContent}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#3b82f6" />}>
         {entries.map((entry) => (
@@ -195,7 +193,6 @@ export default function StokBensin() {
         )}
       </ScrollView>
 
-      {/* Add Modal */}
       <Modal visible={modalVisible} animationType="fade" transparent onRequestClose={() => setModalVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -205,8 +202,8 @@ export default function StokBensin() {
                 <X size={24} color="#94a3b8" />
               </TouchableOpacity>
             </View>
-            <Text style={styles.label}>Tanggal</Text>
-            <TextInput style={styles.input} value={tanggal} onChangeText={setTanggal} placeholder="YYYY-MM-DD" placeholderTextColor="#64748b" />
+            <Text style={styles.label}>Tanggal (YYYY-MM-DD)</Text>
+            <TextInput style={styles.input} value={tanggal} onChangeText={setTanggal} placeholder="2026-06-22" placeholderTextColor="#64748b" />
             <Text style={styles.label}>Jam (HH:MM)</Text>
             <TextInput style={styles.input} value={jam} onChangeText={setJam} placeholder="08:30" placeholderTextColor="#64748b" />
             <Text style={styles.label}>Jumlah Liter</Text>
@@ -222,7 +219,6 @@ export default function StokBensin() {
         </View>
       </Modal>
 
-      {/* Edit Modal */}
       <Modal visible={editModalVisible} animationType="fade" transparent onRequestClose={() => setEditModalVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -232,8 +228,8 @@ export default function StokBensin() {
                 <X size={24} color="#94a3b8" />
               </TouchableOpacity>
             </View>
-            <Text style={styles.label}>Tanggal</Text>
-            <TextInput style={styles.input} value={tanggal} onChangeText={setTanggal} placeholder="YYYY-MM-DD" placeholderTextColor="#64748b" />
+            <Text style={styles.label}>Tanggal (YYYY-MM-DD)</Text>
+            <TextInput style={styles.input} value={tanggal} onChangeText={setTanggal} placeholder="2026-06-22" placeholderTextColor="#64748b" />
             <Text style={styles.label}>Jam (HH:MM)</Text>
             <TextInput style={styles.input} value={jam} onChangeText={setJam} placeholder="08:30" placeholderTextColor="#64748b" />
             <Text style={styles.label}>Jumlah Liter</Text>
@@ -249,7 +245,6 @@ export default function StokBensin() {
         </View>
       </Modal>
 
-      {/* Confirm Delete Modal */}
       <Modal visible={confirmModalVisible} animationType="fade" transparent onRequestClose={() => setConfirmModalVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>

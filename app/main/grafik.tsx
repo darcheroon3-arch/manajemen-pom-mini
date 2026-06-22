@@ -83,11 +83,12 @@ export default function Grafik() {
   const [candleDetail, setCandleDetail] = useState<number | null>(null);
 
   const fetchData = useCallback(async () => {
-    const end = new Date();
-    const start = new Date();
-    start.setDate(start.getDate() - rangeDays);
-    const startStr = start.toISOString().split('T')[0];
-    const endStr = end.toISOString().split('T')[0];
+    const offsetMs = 7 * 60 * 60 * 1000;
+    const end = new Date(new Date().getTime() + offsetMs);
+    const start = new Date(new Date().getTime() + offsetMs);
+    start.setUTCDate(start.getUTCDate() - rangeDays);
+    const startStr = `${start.getUTCFullYear()}-${String(start.getUTCMonth() + 1).padStart(2, '0')}-${String(start.getUTCDate()).padStart(2, '0')}`;
+    const endStr = `${end.getUTCFullYear()}-${String(end.getUTCMonth() + 1).padStart(2, '0')}-${String(end.getUTCDate()).padStart(2, '0')}`;
 
     const [salesRes, expensesRes, giftsRes] = await Promise.all([
       supabase.from('sales').select('*').gte('tanggal', startStr).lte('tanggal', endStr),
@@ -102,8 +103,8 @@ export default function Grafik() {
     const dates: string[] = [];
     for (let i = 0; i <= rangeDays; i++) {
       const d = new Date(start);
-      d.setDate(d.getDate() + i);
-      dates.push(d.toISOString().split('T')[0]);
+      d.setUTCDate(d.getUTCDate() + i);
+      dates.push(`${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`);
     }
 
     let runningBalance = 0;
@@ -508,7 +509,7 @@ export default function Grafik() {
           <View style={[styles.insightCard, { backgroundColor: '#1e3a5f' }]}>
             <Text style={styles.insightLabel}>Total Hari Ini</Text>
             <Text style={[styles.insightValue, { color: activeColor }]}>
-              {formatVal(data.find(d => d.date === new Date().toISOString().split('T')[0])?.value || 0)}
+              {formatVal(data.find(d => d.date === `${new Date().getUTCFullYear()}-${String(new Date().getUTCMonth()+1).padStart(2,'0')}-${String(new Date().getUTCDate()).padStart(2,'0')}`)?.value || 0)}
             </Text>
           </View>
           <View style={[styles.insightCard, { backgroundColor: '#1e3a5f' }]}>

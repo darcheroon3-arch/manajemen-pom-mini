@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Modal,
 import { supabase } from '@/lib/supabase';
 import { Gift as GiftType } from '@/types/database';
 import { Plus, Edit2, Trash2, X, AlertTriangle, Gift } from 'lucide-react-native';
+import { getIndonesiaDateStr, isValidDate } from '@/lib/date';
 
 export default function GiftScreen() {
   const [gifts, setGifts] = useState<GiftType[]>([]);
@@ -11,7 +12,7 @@ export default function GiftScreen() {
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<GiftType | null>(null);
   const [selectedGift, setSelectedGift] = useState<GiftType | null>(null);
-  const [tanggal, setTanggal] = useState(new Date().toISOString().split('T')[0]);
+  const [tanggal, setTanggal] = useState(getIndonesiaDateStr());
   const [nominal, setNominal] = useState('');
   const [keterangan, setKeterangan] = useState('');
   const [refreshing, setRefreshing] = useState(false);
@@ -38,6 +39,7 @@ export default function GiftScreen() {
 
   const addGift = async () => {
     setErrorMsg('');
+    if (!isValidDate(tanggal)) { setErrorMsg('Tanggal tidak valid'); return; }
     if (!nominal) { setErrorMsg('Nominal harus diisi'); return; }
     const n = parseFloat(nominal);
     if (isNaN(n) || n < 0) { setErrorMsg('Nominal tidak valid'); return; }
@@ -59,6 +61,7 @@ export default function GiftScreen() {
 
   const editGift = async () => {
     setErrorMsg('');
+    if (!isValidDate(tanggal)) { setErrorMsg('Tanggal tidak valid'); return; }
     if (!selectedGift || !nominal) { setErrorMsg('Data tidak lengkap'); return; }
     const n = parseFloat(nominal);
     if (isNaN(n) || n < 0) { setErrorMsg('Nominal tidak valid'); return; }
@@ -117,7 +120,7 @@ export default function GiftScreen() {
   };
 
   const resetForm = () => {
-    setTanggal(new Date().toISOString().split('T')[0]);
+    setTanggal(getIndonesiaDateStr());
     setNominal('');
     setKeterangan('');
   };
@@ -177,8 +180,8 @@ export default function GiftScreen() {
                 <X size={24} color="#94a3b8" />
               </TouchableOpacity>
             </View>
-            <Text style={styles.label}>Tanggal</Text>
-            <TextInput style={styles.input} value={tanggal} onChangeText={setTanggal} placeholder="YYYY-MM-DD" placeholderTextColor="#64748b" />
+            <Text style={styles.label}>Tanggal (YYYY-MM-DD)</Text>
+            <TextInput style={styles.input} value={tanggal} onChangeText={setTanggal} placeholder="2026-06-22" placeholderTextColor="#64748b" />
             <Text style={styles.label}>Nominal</Text>
             <TextInput style={styles.input} value={nominal} onChangeText={setNominal} keyboardType="numeric" placeholder="0" placeholderTextColor="#64748b" />
             <Text style={styles.label}>Keterangan</Text>
@@ -199,8 +202,8 @@ export default function GiftScreen() {
                 <X size={24} color="#94a3b8" />
               </TouchableOpacity>
             </View>
-            <Text style={styles.label}>Tanggal</Text>
-            <TextInput style={styles.input} value={tanggal} onChangeText={setTanggal} placeholder="YYYY-MM-DD" placeholderTextColor="#64748b" />
+            <Text style={styles.label}>Tanggal (YYYY-MM-DD)</Text>
+            <TextInput style={styles.input} value={tanggal} onChangeText={setTanggal} placeholder="2026-06-22" placeholderTextColor="#64748b" />
             <Text style={styles.label}>Nominal</Text>
             <TextInput style={styles.input} value={nominal} onChangeText={setNominal} keyboardType="numeric" placeholder="0" placeholderTextColor="#64748b" />
             <Text style={styles.label}>Keterangan</Text>
